@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benowu - Plataforma de Exámenes</title>
+    <style>
+        :root {
+            --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            --accent: #6366f1; --accent-light: #818cf8; --accent-dark: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --success: #22c55e; --success-light: #86efac; --danger: #ef4444; --danger-light: #fca5a5; --warning: #eab308;
+            --blue: #3b82f6; --gold: #f59e0b; --silver: #94a3b8; --bronze: #d97706;
+            --radius: 12px; --radius-lg: 16px; --radius-xl: 24px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        [data-theme="dark"] {
+            --bg-0: #09090b; --bg-1: #18181b; --bg-2: #27272a; --bg-3: #3f3f46; --bg-4: #52525b;
+            --text-0: #ffffff; --text-1: #f4f4f5; --text-2: #d4d4d8; --text-3: #a1a1aa;
+            --border: #3f3f46; --border-light: #52525b;
+        }
+        [data-theme="light"] {
+            --bg-0: #ffffff; --bg-1: #fafafa; --bg-2: #f4f4f5; --bg-3: #e4e4e7; --bg-4: #d4d4d8;
+            --text-0: #09090b; --text-1: #18181b; --text-2: #3f3f46; --text-3: #71717a;
+            --border: #e4e4e7; --border-light: #d4d4d8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font); font-size: 15px; line-height: 1.6; background: var(--bg-0); color: var(--text-0); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
+        #app { flex: 1; display: flex; flex-direction: column; background: var(--bg-0); }
+        .header { position: sticky; top: 0; z-index: 100; background: var(--bg-1); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .theme-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: var(--transition); }
+        .theme-btn:hover { background: var(--bg-3); color: var(--text-0); }
+        .user-section { display: flex; align-items: center; gap: 12px; }
+        .user-pill { display: flex; align-items: center; gap: 10px; padding: 4px 12px 4px 4px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 100px; cursor: pointer; transition: var(--transition); }
+        .user-pill:hover { background: var(--bg-3); }
+        .user-pill .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-light)); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; overflow: hidden; }
+        .user-pill .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-pill .name { font-size: 14px; font-weight: 500; color: var(--text-0); }
+        .admin-badge { background: linear-gradient(135deg, var(--accent), var(--accent-light)); color: white; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+        .logout-btn { background: none; border: 1px solid var(--border); color: var(--text-1); font-size: 14px; font-weight: 500; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: var(--transition); font-family: inherit; }
+        .logout-btn:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); border-color: var(--danger); }
+        .main-content { flex: 1; }
+        .container { max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+        .container.wide { max-width: 1100px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: var(--transition); text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: white; box-shadow: 0 2px 12px var(--accent-glow); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+        .btn-secondary { background: var(--bg-2); color: var(--text-1); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-3); }
+        .btn-success { background: linear-gradient(135deg, var(--success), #16a34a); color: white; }
+        .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .btn-sm { padding: 8px 14px; font-size: 13px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 8px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 15px; font-family: inherit; color: var(--text-0); transition: var(--transition); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-3); }
+        .form-group .error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+        .form-group.error input { border-color: var(--danger); }
+        .form-group.error .error-msg { display: block; }
+        .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .form-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .login-wrapper { min-height: calc(100vh - 56px - 80px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .login-card { width: 100%; max-width: 380px; background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 40px 32px; text-align: center; }
+        .login-header { margin-bottom: 32px; }
+        .login-header .brand { font-size: 36px; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent-light), #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+        .login-header .tagline { font-size: 14px; color: var(--text-2); }
+        .alert-banner { background: linear-gradient(135deg, var(--accent), var(--accent-light)); color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; }
+        .alert-banner .icon { font-size: 20px; }
+        .alert-banner .text { flex: 1; }
+        .alert-banner .deadline { font-weight: 700; }
+        .page-title { font-size: 28px; font-weight: 700; color: var(--text-0); margin-bottom: 4px; }
+        .page-subtitle { font-size: 15px; color: var(--text-2); margin-bottom: 32px; }
+        .tabs { display: flex; background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+        .tab { flex: 1; min-width: 100px; padding: 10px 16px; background: transparent; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); cursor: pointer; font-family: inherit; transition: var(--transition); }
+        .tab:hover:not(.active) { color: var(--text-1); }
+        .tab.active { background: var(--accent); color: white; box-shadow: 0 2px 8px var(--accent-glow); }
+        .exam-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .exam-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; cursor: pointer; transition: var(--transition); position: relative; }
+        .exam-card:hover:not(.locked) { border-color: var(--accent); box-shadow: 0 4px 20px var(--accent-glow); transform: translateY(-2px); }
+        .exam-card.locked { opacity: 0.7; cursor: default; }
+        .exam-card.locked::before { content: '🔒'; position: absolute; top: 12px; right: 12px; font-size: 16px; }
+        .exam-card-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+        .exam-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .exam-card-head h3 { font-size: 16px; font-weight: 600; color: var(--text-0); margin-bottom: 4px; }
+        .exam-card-head p { font-size: 13px; color: var(--text-2); }
+        .exam-card-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-3); margin-top: 12px; }
+        .exam-card-meta span { display: flex; align-items: center; gap: 4px; }
+        .exam-status { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 13px; font-weight: 600; }
+        .exam-status.passed { color: var(--success); }
+        .exam-status.failed { color: var(--danger); }
+        .exam-status.pending { color: var(--warning); }
+        .attempts-badge { display: inline-block; background: var(--bg-3); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-2); margin-left: 8px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-3); }
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+        .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+        .history-item { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 12px; cursor: pointer; transition: var(--transition); }
+        .history-item:hover { border-color: var(--border-light); background: var(--bg-2); }
+        .history-score { width: 48px; height: 48px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+        .history-score.excellent { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .history-score.good { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+        .history-score.regular { background: rgba(234, 179, 8, 0.15); color: var(--warning); }
+        .history-score.poor { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .history-info { flex: 1; }
+        .history-info h4 { font-size: 15px; font-weight: 600; color: var(--text-0); margin-bottom: 2px; }
+        .history-info p { font-size: 13px; color: var(--text-2); }
+        .history-actions { display: flex; gap: 8px; }
+        .icon-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text-1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition); }
+        .icon-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
+        .ranking-list { display: flex; flex-direction: column; gap: 8px; }
+        .ranking-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius); }
+        .ranking-item.top-1 { border-color: var(--gold); background: rgba(245, 158, 11, 0.1); }
+        .ranking-item.top-2 { border-color: var(--silver); background: rgba(148, 163, 184, 0.1); }
+        .ranking-item.top-3 { border-color: var(--bronze); background: rgba(217, 119, 6, 0.1); }
+        .ranking-pos { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: var(--bg-2); color: var(--text-1); }
+        .ranking-item.top-1 .ranking-pos { background: var(--gold); color: #000; }
+        .ranking-item.top-2 .ranking-pos { background: var(--silver); color: #000; }
+        .ranking-item.top-3 .ranking-pos { background: var(--bronze); color: #fff; }
+        .ranking-info { flex: 1; }
+        .ranking-info h4 { font-size: 15px; font-weight: 600; color: var(--text-0); }
+        .ranking-info p { font-size: 13px; color: var(--text-2); }
+        .ranking-score { font-size: 20px; font-weight: 700; color: var(--accent); }
+        .ranking-medal { font-size: 24px; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stat-box { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; text-align: center; }
+        .stat-box .value { font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-box .label { font-size: 13px; color: var(--text-1); margin-top: 4px; font-weight: 500; }
+        .chart-container { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; }
+        .chart-title { font-size: 18px; font-weight: 700; margin-bottom: 24px; color: var(--text-0); display: flex; align-items: center; gap: 10px; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 200px; padding-top: 30px; }
+        .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .bar { width: 100%; max-width: 60px; background: linear-gradient(180deg, var(--accent), var(--accent-dark)); border-radius: 8px 8px 0 0; transition: height 0.5s ease; position: relative; min-height: 4px; }
+        .bar::before { content: attr(data-value); position: absolute; top: -28px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: var(--text-0); }
+        .bar-label { font-size: 13px; color: var(--text-0); text-align: center; font-weight: 600; background: var(--bg-2); padding: 4px 8px; border-radius: 4px; }
+        .data-table { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+        .table-header { display: grid; grid-template-columns: 2fr 1.5fr 80px 80px 60px; padding: 14px 20px; background: var(--bg-2); font-size: 12px; font-weight: 700; color: var(--text-0); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .table-row { display: grid; grid-template-columns: 2fr 1.5fr 80px 80px 60px; padding: 16px 20px; border-top: 1px solid var(--border); align-items: center; cursor: pointer; transition: var(--transition); }
+        .table-row:first-child { border-top: none; }
+        .table-row:hover { background: var(--bg-2); }
+        .table-row .name { font-weight: 600; color: var(--text-0); font-size: 15px; }
+        .table-row .dni { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+        .table-row .exam { font-size: 14px; color: var(--text-1); }
+        .table-row .score { font-weight: 700; font-size: 16px; }
+        .table-row .score.excellent { color: var(--success); }
+        .table-row .score.good { color: var(--blue); }
+        .table-row .score.regular { color: var(--warning); }
+        .table-row .score.poor { color: var(--danger); }
+        .table-row .aciertos { font-size: 14px; color: var(--text-0); font-weight: 600; }
+        .table-row .note-indicator { font-size: 18px; cursor: pointer; transition: var(--transition); }
+        .table-row .note-indicator:hover { transform: scale(1.2); }
+        .table-row .note-indicator.has-note { color: var(--accent); }
+        .exam-manager-grid { display: grid; gap: 16px; }
+        .exam-manager-item { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: flex; align-items: center; gap: 16px; }
+        .exam-manager-icon { width: 56px; height: 56px; background: var(--bg-2); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .exam-manager-info { flex: 1; }
+        .exam-manager-info h4 { font-size: 16px; font-weight: 600; color: var(--text-0); margin-bottom: 4px; }
+        .exam-manager-info p { font-size: 13px; color: var(--text-2); }
+        .exam-manager-actions { display: flex; gap: 8px; }
+        .exam-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .exam-title h2 { font-size: 20px; font-weight: 600; color: var(--text-0); }
+        .exam-title p { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+        .timer { background: var(--bg-2); border: 1px solid var(--border); padding: 10px 20px; border-radius: var(--radius); font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; color: var(--text-0); }
+        .timer.warning { background: rgba(234, 179, 8, 0.15); border-color: var(--warning); color: var(--warning); }
+        .timer.danger { background: rgba(239, 68, 68, 0.15); border-color: var(--danger); color: var(--danger); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        .progress-section { margin-bottom: 32px; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-2); margin-bottom: 10px; }
+        .progress-track { height: 6px; background: var(--bg-2); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius: 3px; transition: width 0.3s ease; }
+        .question-label { display: inline-block; background: rgba(99, 102, 241, 0.1); color: var(--accent); font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 6px; margin-bottom: 16px; text-transform: uppercase; }
+        .question-text { font-size: 22px; font-weight: 600; color: var(--text-0); line-height: 1.4; margin-bottom: 28px; }
+        .options-list { display: flex; flex-direction: column; gap: 12px; }
+        .option { display: flex; align-items: center; padding: 16px 20px; background: var(--bg-1); border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: var(--transition); }
+        .option:hover { border-color: var(--border-light); background: var(--bg-2); }
+        .option.selected { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+        .option .letter { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--text-1); margin-right: 14px; flex-shrink: 0; transition: var(--transition); }
+        .option.selected .letter { background: var(--accent); border-color: var(--accent); color: white; }
+        .option .text { font-size: 15px; font-weight: 500; color: var(--text-0); }
+        .option.correct { border-color: var(--success); background: rgba(34, 197, 94, 0.15); }
+        .option.correct .letter { background: var(--success); border-color: var(--success); color: white; }
+        .option.incorrect { border-color: var(--danger); background: rgba(239, 68, 68, 0.15); }
+        .option.incorrect .letter { background: var(--danger); border-color: var(--danger); color: white; }
+        .nav-section { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border); margin-top: 32px; flex-wrap: wrap; gap: 16px; }
+        .mark-toggle { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text-2); transition: var(--transition); user-select: none; }
+        .mark-toggle:hover { background: var(--bg-2); }
+        .mark-toggle.active { background: rgba(234, 179, 8, 0.15); color: var(--warning); }
+        .mark-toggle .check { width: 18px; height: 18px; border: 2px solid currentColor; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+        .mark-toggle.active .check { background: var(--warning); border-color: var(--warning); color: #000; }
+        .nav-buttons { display: flex; gap: 12px; }
+        .question-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; padding: 20px; background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+        .q-num { width: 38px; height: 38px; border: 2px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); background: var(--bg-2); color: var(--text-1); }
+        .q-num:hover { border-color: var(--accent); }
+        .q-num.current { background: var(--accent); border-color: var(--accent); color: white; }
+        .q-num.answered { background: var(--success); border-color: var(--success); color: white; }
+        .q-num.marked { box-shadow: 0 0 0 2px var(--warning); }
+        .results-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 40px; text-align: center; }
+        .results-header { margin-bottom: 32px; }
+        .results-header h2 { font-size: 24px; font-weight: 700; color: var(--text-0); margin-bottom: 8px; }
+        .results-header p { color: var(--text-2); }
+        .score-display { background: var(--bg-2); border-radius: var(--radius-xl); padding: 40px; margin-bottom: 32px; }
+        .score-number { font-size: 64px; font-weight: 800; line-height: 1; color: var(--text-0); }
+        .score-number span { font-size: 24px; color: var(--text-3); }
+        .score-label { font-size: 15px; color: var(--text-2); margin-top: 8px; }
+        .score-bar { height: 8px; background: var(--bg-3); border-radius: 4px; margin-top: 24px; overflow: hidden; }
+        .score-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+        .score-bar-fill.excellent { background: linear-gradient(90deg, var(--success), #4ade80); }
+        .score-bar-fill.good { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+        .score-bar-fill.regular { background: linear-gradient(90deg, var(--warning), #facc15); }
+        .score-bar-fill.poor { background: linear-gradient(90deg, var(--danger), #f87171); }
+        .stats-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stats-card { background: var(--bg-2); border-radius: var(--radius); padding: 20px; }
+        .stats-card .icon { font-size: 32px; margin-bottom: 8px; }
+        .stats-card .num { font-size: 28px; font-weight: 700; }
+        .stats-card.correct .icon { color: var(--success); }
+        .stats-card.correct .num { color: var(--success); }
+        .stats-card.incorrect .icon { color: var(--danger); }
+        .stats-card.incorrect .num { color: var(--danger); }
+        .stats-card.skip .icon { color: var(--text-3); }
+        .stats-card.skip .num { color: var(--text-3); }
+        .stats-card .lbl { font-size: 13px; color: var(--text-1); margin-top: 4px; font-weight: 500; }
+        .pass-badge { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 100px; font-weight: 700; font-size: 16px; margin-bottom: 24px; }
+        .pass-badge.passed { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .pass-badge.failed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .review-section { text-align: left; margin-top: 40px; }
+        .review-section h3 { font-size: 20px; font-weight: 700; margin-bottom: 24px; text-align: center; color: var(--text-0); }
+        .review-item { background: var(--bg-2); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; border-left: 4px solid transparent; }
+        .review-item.correct { border-left-color: var(--success); }
+        .review-item.incorrect { border-left-color: var(--danger); }
+        .review-item.skip { border-left-color: var(--text-3); }
+        .review-item-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+        .review-item-num { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
+        .review-item.correct .review-item-num { background: var(--success); }
+        .review-item.incorrect .review-item-num { background: var(--danger); }
+        .review-item.skip .review-item-num { background: var(--text-3); }
+        .review-item-q { font-weight: 600; font-size: 15px; color: var(--text-0); line-height: 1.4; }
+        .review-answers { margin-left: 44px; }
+        .review-answers p { font-size: 14px; padding: 12px 16px; border-radius: 8px; margin-top: 8px; font-weight: 600; }
+        .review-answers .user-ans { background: rgba(239, 68, 68, 0.2); color: var(--danger-light); }
+        .review-answers .user-ans.is-correct { background: rgba(34, 197, 94, 0.2); color: var(--success-light); }
+        .review-answers .correct-ans { background: rgba(34, 197, 94, 0.2); color: var(--success-light); }
+        .results-actions { display: flex; justify-content: center; gap: 16px; margin-top: 32px; flex-wrap: wrap; }
+        .review-locked { text-align: center; padding: 40px; background: var(--bg-2); border-radius: var(--radius-lg); color: var(--text-2); }
+        .review-locked .icon { font-size: 48px; margin-bottom: 16px; }
+        .certificate-preview { background: white; color: #1a1a2e; border-radius: 8px; padding: 60px 50px; margin: 20px 0; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .certificate-preview::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4); }
+        .certificate-preview::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, #06b6d4, #8b5cf6, #6366f1); }
+        .cert-border { border: 3px solid #6366f1; border-radius: 4px; padding: 40px; position: relative; }
+        .cert-corner { position: absolute; width: 60px; height: 60px; border: 3px solid #8b5cf6; }
+        .cert-corner.tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .cert-corner.tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+        .cert-corner.bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+        .cert-corner.br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+        .cert-logo { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+        .cert-subtitle { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px; }
+        .cert-title { font-size: 36px; font-weight: 700; color: #1e293b; margin-bottom: 8px; font-family: Georgia, serif; }
+        .cert-text { font-size: 14px; color: #64748b; margin-bottom: 24px; }
+        .cert-name { font-size: 32px; font-weight: 700; color: #6366f1; margin: 20px 0; font-family: Georgia, serif; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: inline-block; }
+        .cert-course { font-size: 20px; color: #334155; margin: 16px 0; font-weight: 600; }
+        .cert-score { display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 12px 32px; border-radius: 100px; font-size: 18px; font-weight: 700; margin: 20px 0; }
+        .cert-date { font-size: 13px; color: #94a3b8; margin-top: 24px; }
+        .cert-seal { width: 80px; height: 80px; margin: 20px auto 0; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
+        .cert-footer { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+        .cert-sig { text-align: center; }
+        .cert-sig-line { width: 150px; border-bottom: 1px solid #cbd5e1; margin-bottom: 8px; }
+        .cert-sig-name { font-size: 12px; color: #64748b; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: var(--transition); padding: 20px; overflow-y: auto; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 32px; max-width: 500px; width: 100%; text-align: center; transform: scale(0.95); transition: transform 0.2s ease; max-height: 90vh; overflow-y: auto; }
+        .modal.wide { max-width: 700px; }
+        .modal.xl { max-width: 900px; text-align: left; }
+        .modal-overlay.active .modal { transform: scale(1); }
+        .modal-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; }
+        .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--text-0); }
+        .modal p { color: var(--text-2); margin-bottom: 24px; font-size: 14px; line-height: 1.5; }
+        .modal-buttons { display: flex; gap: 12px; justify-content: center; }
+        .modal-buttons .btn { flex: 1; max-width: 200px; }
+        .profile-modal .modal { max-width: 340px; }
+        .profile-avatar-edit { width: 88px; height: 88px; margin: 0 auto 20px; position: relative; cursor: pointer; }
+        .profile-avatar-edit .avatar-img { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-light)); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: white; overflow: hidden; }
+        .profile-avatar-edit .avatar-img img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar-edit .edit-badge { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: var(--bg-2); border: 2px solid var(--bg-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .profile-avatar-edit input { display: none; }
+        .profile-info h4 { font-size: 18px; font-weight: 600; margin-bottom: 4px; color: var(--text-0); }
+        .profile-info p { font-size: 14px; color: var(--text-2); margin-bottom: 24px; }
+        .note-modal textarea { min-height: 120px; resize: vertical; }
+        .note-display { background: var(--bg-2); border-radius: var(--radius); padding: 16px; margin-top: 16px; text-align: left; }
+        .note-display .note-label { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; }
+        .note-display .note-text { font-size: 14px; color: var(--text-1); line-height: 1.5; white-space: pre-wrap; }
+        .loading { display: flex; align-items: center; justify-content: center; padding: 60px; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--bg-3); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+        .footer { background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%); border-top: 1px solid var(--border); padding: 24px 24px 20px; }
+        .footer-content { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .footer-left { display: flex; flex-direction: column; gap: 4px; }
+        .footer-brand { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .footer-tagline { font-size: 13px; color: var(--text-2); font-style: italic; }
+        .footer-right { text-align: right; }
+        .footer-text { font-size: 12px; color: var(--text-3); }
+        .footer-links { display: flex; gap: 16px; margin-top: 6px; }
+        .footer-links a { font-size: 11px; color: var(--text-3); text-decoration: none; transition: var(--transition); }
+        .footer-links a:hover { color: var(--accent); }
+        .time-warning-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--warning), #d97706); color: #000; padding: 16px 28px; border-radius: var(--radius); font-weight: 600; font-size: 15px; z-index: 1001; box-shadow: 0 4px 20px rgba(234, 179, 8, 0.4); display: flex; align-items: center; gap: 12px; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { transform: translateX(-50%) translateY(-100%); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        @media (max-width: 768px) { .stats-row { grid-template-columns: repeat(2, 1fr); } .form-row, .form-row-3 { grid-template-columns: 1fr; } .footer-content { justify-content: center; text-align: center; } .footer-right { text-align: center; } }
+        @media (max-width: 640px) { .container { padding: 24px 16px; } .login-card { padding: 32px 24px; } .results-card { padding: 24px; } .exam-header { flex-direction: column; gap: 16px; text-align: center; } .stats-row, .stats-cards { grid-template-columns: 1fr; } .nav-section { flex-direction: column; } .nav-buttons { width: 100%; } .nav-buttons .btn { flex: 1; } .table-header, .table-row { grid-template-columns: 1fr 60px 40px; } .table-header > *:nth-child(2), .table-header > *:nth-child(4), .table-row > *:nth-child(2), .table-row > *:nth-child(4) { display: none; } .user-pill .name { display: none; } .score-number { font-size: 48px; } }
+        @media print { body * { visibility: hidden; } .certificate-print, .certificate-print * { visibility: visible; } .certificate-print { position: absolute; left: 0; top: 0; width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="app" data-theme="dark">
+        <header class="header">
+            <div class="logo" id="logoBtn">Benowu</div>
+            <div class="header-right">
+                <button class="theme-btn" id="themeBtn" title="Cambiar tema">🌙</button>
+                <div class="user-section hidden" id="userMenu">
+                    <button class="user-pill" id="profileBtn">
+                        <div class="avatar" id="headerAvatar"></div>
+                        <span class="name" id="headerName"></span>
+                    </button>
+                    <span class="admin-badge hidden" id="adminBadge">Admin</span>
+                    <button class="logout-btn" id="logoutBtn">Salir</button>
+                </div>
+            </div>
+        </header>
+        <div class="alert-banner hidden" id="alertBanner">
+            <span class="icon">⏰</span>
+            <span class="text">Tienes exámenes pendientes. Fecha límite: <span class="deadline" id="alertDeadline"></span></span>
+        </div>
+
+        <div class="main-content">
+            <div class="login-wrapper" id="loginScreen">
+                <div class="login-card">
+                    <div class="login-header">
+                        <div class="brand">Benowu</div>
+                        <div class="tagline">Educación Online con Clases en directo</div>
+                    </div>
+                    <form id="loginForm">
+                        <div class="form-group" id="nameGroup">
+                            <label>Nombre completo</label>
+                            <input type="text" id="nameInput" placeholder="Tu nombre" autocomplete="name">
+                            <span class="error-msg">Mínimo 3 caracteres</span>
+                        </div>
+                        <div class="form-group" id="dniGroup">
+                            <label>DNI / Código de acceso</label>
+                            <input type="text" id="dniInput" placeholder="12345678A" maxlength="20" autocomplete="off">
+                            <span class="error-msg">Formato: 8 números + 1 letra</span>
+                        </div>
+                        <div class="form-group hidden" id="passwordGroup">
+                            <label>Contraseña (Admin)</label>
+                            <input type="password" id="passwordInput" placeholder="Contraseña">
+                            <span class="error-msg">Contraseña incorrecta</span>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Acceder</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="container hidden" id="dashboardScreen">
+                <h1 class="page-title">Exámenes</h1>
+                <p class="page-subtitle">Selecciona un examen o revisa tu historial</p>
+                <div class="tabs">
+                    <button class="tab active" data-tab="exams">Disponibles</button>
+                    <button class="tab" data-tab="history">Mi historial</button>
+                </div>
+                <div id="examsTab"><div class="exam-grid" id="examGrid"></div></div>
+                <div id="historyTab" class="hidden"><div id="historyContent"></div></div>
+            </div>
+
+            <div class="container wide hidden" id="adminScreen">
+                <h1 class="page-title">Panel de Administración</h1>
+                <p class="page-subtitle">Gestiona exámenes, resultados y estadísticas</p>
+                <div class="tabs admin-tabs">
+                    <button class="tab active" data-admin-tab="stats">📊 Estadísticas</button>
+                    <button class="tab" data-admin-tab="results">📋 Resultados</button>
+                    <button class="tab" data-admin-tab="ranking">🏆 Ranking</button>
+                    <button class="tab" data-admin-tab="exams">📝 Exámenes</button>
+                </div>
+                <div id="adminStatsTab"><div class="loading"><div class="spinner"></div></div></div>
+                <div id="adminResultsTab" class="hidden"><div class="loading"><div class="spinner"></div></div></div>
+                <div id="adminRankingTab" class="hidden"><div class="loading"><div class="spinner"></div></div></div>
+                <div id="adminExamsTab" class="hidden"><div class="loading"><div class="spinner"></div></div></div>
+            </div>
+
+            <div class="container hidden" id="examScreen">
+                <div class="exam-header">
+                    <div class="exam-title"><h2 id="examTitle">Examen</h2><p>Responde antes de que termine el tiempo</p></div>
+                    <div class="timer" id="timer">30:00</div>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-info"><span id="qCounter">Pregunta 1 de 15</span><span id="aCounter">0 respondidas</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+                </div>
+                <div class="question-section">
+                    <div class="question-label" id="qLabel">Pregunta 1</div>
+                    <div class="question-text" id="qText"></div>
+                    <div class="options-list" id="optionsList"></div>
+                </div>
+                <div class="nav-section">
+                    <div class="mark-toggle" id="markToggle"><span class="check">✓</span> Marcar para revisar</div>
+                    <div class="nav-buttons">
+                        <button class="btn btn-secondary" id="prevBtn">← Anterior</button>
+                        <button class="btn btn-secondary" id="nextBtn">Siguiente →</button>
+                        <button class="btn btn-primary hidden" id="finishBtn">Finalizar</button>
+                    </div>
+                </div>
+                <div class="question-grid" id="qGrid"></div>
+            </div>
+
+            <div class="container hidden" id="resultsScreen">
+                <div class="results-card">
+                    <div class="results-header"><h2>Examen completado</h2><p id="resultsTitle"></p></div>
+                    <div class="pass-badge" id="passBadge"></div>
+                    <div class="score-display">
+                        <div class="score-number"><span id="scoreVal">0</span><span>/10</span></div>
+                        <div class="score-label">Tu puntuación</div>
+                        <div class="score-bar"><div class="score-bar-fill" id="scoreBar" style="width: 0%"></div></div>
+                    </div>
+                    <div class="stats-cards">
+                        <div class="stats-card correct"><div class="icon">✓</div><div class="num" id="correctNum">0</div><div class="lbl">Correctas</div></div>
+                        <div class="stats-card incorrect"><div class="icon">✗</div><div class="num" id="incorrectNum">0</div><div class="lbl">Incorrectas</div></div>
+                        <div class="stats-card skip"><div class="icon">—</div><div class="num" id="skipNum">0</div><div class="lbl">Sin contestar</div></div>
+                    </div>
+                    <div class="review-section" id="reviewSection"></div>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" id="homeBtn">← Volver al inicio</button>
+                        <button class="btn btn-gold hidden" id="certBtn">🏆 Ver Certificado</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container hidden" id="historyReviewScreen">
+                <div class="results-card">
+                    <div class="results-header"><h2>Revisión del examen</h2><p id="hReviewTitle"></p></div>
+                    <div class="score-display">
+                        <div class="score-number"><span id="hScoreVal">0</span><span>/10</span></div>
+                        <div class="score-label">Puntuación obtenida</div>
+                        <div class="score-bar"><div class="score-bar-fill" id="hScoreBar" style="width: 0%"></div></div>
+                    </div>
+                    <div class="review-section" id="hReviewSection"></div>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" id="backBtn">← Volver</button>
+                        <button class="btn btn-gold hidden" id="hCertBtn">🏆 Ver Certificado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-brand">Benowu</div>
+                    <div class="footer-tagline">✨ Transformando el futuro a través del conocimiento</div>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-text">© 2026 Benowu Academy · Todos los derechos reservados</div>
+                    <div class="footer-links">
+                        <a href="#">Términos de uso</a>
+                        <a href="#">Política de privacidad</a>
+                        <a href="#">Soporte</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Modales -->
+        <div class="modal-overlay" id="confirmModal">
+            <div class="modal">
+                <div class="modal-icon" style="background: rgba(234, 179, 8, 0.15);">⚠️</div>
+                <h3>¿Finalizar examen?</h3>
+                <p id="confirmMsg">¿Estás seguro?</p>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button class="btn btn-primary" id="confirmBtn">Finalizar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay note-modal" id="noteModal">
+            <div class="modal">
+                <div class="modal-icon" style="background: rgba(99, 102, 241, 0.15);">💬</div>
+                <h3>¿Quieres dejar un comentario?</h3>
+                <p style="margin-bottom: 16px;">Puedes dejar una nota para el profesor sobre tu experiencia o cualquier observación.</p>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <textarea id="studentNoteInput" placeholder="Escribe tu comentario aquí (opcional)..." rows="4"></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" id="skipNoteBtn">Omitir</button>
+                    <button class="btn btn-primary" id="saveNoteBtn">Enviar y ver resultados</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay profile-modal" id="profileModal">
+            <div class="modal">
+                <h3>Mi Perfil</h3>
+                <div class="profile-avatar-edit" id="avatarEdit">
+                    <div class="avatar-img" id="profileAvatar"></div>
+                    <div class="edit-badge">📷</div>
+                    <input type="file" id="avatarInput" accept="image/*">
+                </div>
+                <div class="profile-info"><h4 id="profileName"></h4><p id="profileDNI"></p></div>
+                <button class="btn btn-secondary" id="closeProfileBtn" style="width: 100%;">Cerrar</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="certModal">
+            <div class="modal wide">
+                <div class="certificate-preview certificate-print" id="certificateContent"></div>
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button class="btn btn-secondary" id="closeCertBtn">Cerrar</button>
+                    <button class="btn btn-gold" id="printCertBtn">🖨️ Imprimir / Guardar PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="alertModal">
+            <div class="modal">
+                <div class="modal-icon" id="alertModalIcon" style="background: rgba(34, 197, 94, 0.15);">✓</div>
+                <h3 id="alertModalTitle">Éxito</h3>
+                <p id="alertModalMsg"></p>
+                <button class="btn btn-primary" id="closeAlertBtn" style="width: 100%;">Aceptar</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="viewNoteModal">
+            <div class="modal">
+                <div class="modal-icon" style="background: rgba(99, 102, 241, 0.15);">💬</div>
+                <h3>Nota del alumno</h3>
+                <div class="note-display">
+                    <div class="note-label">Comentario:</div>
+                    <div class="note-text" id="viewNoteText"></div>
+                </div>
+                <button class="btn btn-secondary" id="closeViewNoteBtn" style="width: 100%; margin-top: 24px;">Cerrar</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="examEditModal">
+            <div class="modal xl">
+                <h3 id="examEditTitle">Nuevo Examen</h3>
+                <form id="examEditForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>Título</label><input type="text" id="editExamTitle" required></div>
+                        <div class="form-group"><label>Icono</label><input type="text" id="editExamIcon" value="📝" style="width:80px;font-size:24px;text-align:center"></div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group"><label>Tiempo (min)</label><input type="number" id="editExamTime" value="30" min="1"></div>
+                        <div class="form-group"><label>Puntos acierto</label><input type="number" id="editExamPoints" value="1" step="0.1"></div>
+                        <div class="form-group"><label>Puntos error</label><input type="number" id="editExamPenalty" value="0" step="0.1"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Fecha límite</label><input type="date" id="editExamDeadline"></div>
+                        <div class="form-group"><label>Máx intentos</label><input type="number" id="editExamAttempts" value="2" min="1"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Preguntas (JSON)</label>
+                        <textarea id="editExamQuestions" rows="8" style="font-family:monospace;font-size:12px" placeholder='[{"text":"Pregunta","options":["A","B","C","D"],"correctOption":0}]'></textarea>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancelExamBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-success">💾 Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
