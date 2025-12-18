@@ -189,6 +189,39 @@ async function initDatabase() {
         )
     `);
 
+    // Create admin if not exists
+    const bcrypt = require('bcryptjs');
+    const existingAdmin = db.prepare('SELECT id FROM users WHERE dni = ?').get('ADMIN');
+    
+    if (!existingAdmin) {
+        const adminPassword = process.env.ADMIN_PASSWORD || 'admin_benowu25';
+        const hashedPassword = bcrypt.hashSync(adminPassword, 10);
+        db.prepare(`INSERT INTO users (dni, name, password_hash, role) VALUES (?, ?, ?, ?)`).run('ADMIN', 'Administrador', hashedPassword, 'admin');
+        console.log('✅ Usuario admin creado');
+    }
+
+    // Create sample exams if none exist
+    const examCount = db.prepare('SELECT COUNT(*) as count FROM exams').get();
+    if (examCount.count === 0) {
+        console.log('📝 Creando exámenes de ejemplo...');
+        
+        const exam1 = db.prepare(`INSERT INTO exams (title, icon, description, time_limit, points_correct, points_incorrect, max_attempts, deadline, shuffle_questions, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run('Fotografía Básica', '📷', 'Conceptos fundamentales de fotografía', 1800, 1, 0, 2, '2026-01-15', 1, 1);
+
+        const questions1 = [
+            {t:"¿Qué es el triángulo de exposición?", o:["Un accesorio para estabilizar la cámara","La relación entre ISO, apertura y velocidad de obturación","Un tipo de composición fotográfica","El sensor de la cámara"], c:1},
+            {t:"¿Qué controla la apertura del diafragma?", o:["El tiempo que el sensor está expuesto a la luz","La sensibilidad del sensor","La cantidad de luz que entra y la profundidad de campo","El enfoque automático"], c:2},
+            {t:"Un número f/ bajo (ej: f/1.8) significa:", o:["Menor entrada de luz y mayor profundidad de campo","Mayor entrada de luz y menor profundidad de campo","Imagen más oscura","Mayor velocidad de obturación"], c:1},
+            {t:"¿Qué es el ISO en fotografía?", o:["Un formato de archivo de imagen","La sensibilidad del sensor a la luz","El tamaño del sensor","La distancia focal del objetivo"], c:1},
+            {t:"¿Qué sucede al aumentar mucho el ISO?", o:["La imagen se vuelve más nítida","Aparece más ruido/grano en la imagen","Los colores se saturan más","Se reduce la profundidad de campo"], c:1}
+        ];
+
+        questions1.forEach((q, idx) => {
+            db.prepare(`INSERT INTO questions (exam_id, question_text, option_a, option_b, option_c, option_d, correct_option, order_num) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(exam1.lastInsertRowid, q.t, q.o[0], q.o[1], q.o[2], q.o[3], q.c, idx);
+        });
+
+        console.log('✅ Exámenes de ejemplo creados');
+    }
+
     db.save();
     
     // Auto-save every 30 seconds
