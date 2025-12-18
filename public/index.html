@@ -294,7 +294,7 @@
         .spinner { width: 40px; height: 40px; border: 3px solid var(--bg-3); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .hidden { display: none !important; }
-        .footer { background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%); border-top: 1px solid var(--border); padding: 24px 24px 20px; }
+        .footer { background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%); border-top: 1px solid var(--border); padding: 28px 24px 36px; }
         .footer-content { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
         .footer-left { display: flex; flex-direction: column; gap: 4px; }
         .footer-brand { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -459,9 +459,9 @@
                 <div class="footer-right">
                     <div class="footer-text">© 2026 Benowu Academy · Todos los derechos reservados</div>
                     <div class="footer-links">
-                        <a href="#">Términos de uso</a>
-                        <a href="#">Política de privacidad</a>
-                        <a href="#">Soporte</a>
+                        <a href="#" onclick="showLegalModal('terms'); return false;">Términos de uso</a>
+                        <a href="#" onclick="showLegalModal('privacy'); return false;">Política de privacidad</a>
+                        <a href="#" onclick="showLegalModal('support'); return false;">Soporte</a>
                     </div>
                 </div>
             </div>
@@ -536,6 +536,15 @@
                     <div class="note-text" id="viewNoteText"></div>
                 </div>
                 <button class="btn btn-secondary" id="closeViewNoteBtn" style="width: 100%; margin-top: 24px;">Cerrar</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="legalModal">
+            <div class="modal" style="max-width: 600px;">
+                <div class="modal-icon" id="legalModalIcon" style="background: rgba(99, 102, 241, 0.15);">📜</div>
+                <h3 id="legalModalTitle">Información legal</h3>
+                <div id="legalModalContent" style="text-align: left; max-height: 400px; overflow-y: auto; padding: 16px 0; color: var(--text-1); font-size: 14px; line-height: 1.7;"></div>
+                <button class="btn btn-secondary" id="closeLegalBtn" style="width: 100%; margin-top: 24px;">Cerrar</button>
             </div>
         </div>
 

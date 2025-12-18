@@ -839,6 +839,10 @@
             }
         };
 
+        // Legal modal handlers
+        $('closeLegalBtn').onclick = () => $('legalModal').classList.remove('active');
+        $('legalModal').onclick = e => { if (e.target === $('legalModal')) $('legalModal').classList.remove('active'); };
+
         // Check existing session
         if (token && user) {
             updateHeader();
@@ -846,6 +850,114 @@
             else { loadExams(); showScreen('dash'); }
         }
     }
+
+    // Legal modal content
+    window.showLegalModal = function(type) {
+        const modal = $('legalModal');
+        const title = $('legalModalTitle');
+        const icon = $('legalModalIcon');
+        const content = $('legalModalContent');
+
+        const legalContent = {
+            terms: {
+                icon: '📜',
+                title: 'Términos de Uso',
+                content: `
+                    <p><strong>1. Aceptación de los términos</strong></p>
+                    <p>Al acceder y utilizar la plataforma Benowu, aceptas cumplir con estos términos de uso. Si no estás de acuerdo, no utilices la plataforma.</p>
+                    
+                    <p><strong>2. Uso de la plataforma</strong></p>
+                    <p>La plataforma está diseñada exclusivamente para fines educativos. Los usuarios se comprometen a:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 12px;">
+                        <li>Proporcionar información veraz al registrarse</li>
+                        <li>No compartir credenciales de acceso</li>
+                        <li>Realizar los exámenes de forma individual y honesta</li>
+                        <li>No intentar acceder a contenido no autorizado</li>
+                    </ul>
+                    
+                    <p><strong>3. Propiedad intelectual</strong></p>
+                    <p>Todo el contenido de la plataforma (preguntas, diseño, código) es propiedad de Benowu Academy y está protegido por derechos de autor.</p>
+                    
+                    <p><strong>4. Limitación de responsabilidad</strong></p>
+                    <p>Benowu no se hace responsable de problemas técnicos durante los exámenes. Se recomienda usar una conexión estable.</p>
+                    
+                    <p><strong>5. Modificaciones</strong></p>
+                    <p>Nos reservamos el derecho de modificar estos términos en cualquier momento.</p>
+                    
+                    <p style="margin-top: 16px; color: var(--text-3); font-size: 12px;">Última actualización: Enero 2026</p>
+                `
+            },
+            privacy: {
+                icon: '🔒',
+                title: 'Política de Privacidad',
+                content: `
+                    <p><strong>1. Datos que recopilamos</strong></p>
+                    <p>Recopilamos los siguientes datos personales:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 12px;">
+                        <li>Nombre completo</li>
+                        <li>DNI/Código de acceso</li>
+                        <li>Resultados de exámenes</li>
+                        <li>Notas y comentarios enviados</li>
+                    </ul>
+                    
+                    <p><strong>2. Uso de los datos</strong></p>
+                    <p>Utilizamos tus datos únicamente para:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 12px;">
+                        <li>Identificarte en la plataforma</li>
+                        <li>Registrar tu progreso académico</li>
+                        <li>Generar certificados de aprovechamiento</li>
+                        <li>Mejorar nuestros servicios</li>
+                    </ul>
+                    
+                    <p><strong>3. Protección de datos</strong></p>
+                    <p>Implementamos medidas de seguridad como encriptación de contraseñas y tokens JWT para proteger tu información.</p>
+                    
+                    <p><strong>4. Retención de datos</strong></p>
+                    <p>Conservamos tus datos mientras mantengas una cuenta activa. Puedes solicitar la eliminación contactando a soporte.</p>
+                    
+                    <p><strong>5. Tus derechos</strong></p>
+                    <p>Tienes derecho a acceder, rectificar y eliminar tus datos personales según el RGPD.</p>
+                    
+                    <p style="margin-top: 16px; color: var(--text-3); font-size: 12px;">Última actualización: Enero 2026</p>
+                `
+            },
+            support: {
+                icon: '💬',
+                title: 'Soporte',
+                content: `
+                    <p><strong>¿Necesitas ayuda?</strong></p>
+                    <p>Estamos aquí para asistirte con cualquier problema o duda que tengas.</p>
+                    
+                    <p><strong>📧 Contacto por email</strong></p>
+                    <p style="margin-bottom: 16px;">Envíanos un correo a: <a href="mailto:soporte@benowu.com" style="color: var(--accent);">soporte@benowu.com</a></p>
+                    
+                    <p><strong>❓ Preguntas frecuentes</strong></p>
+                    
+                    <p><em>¿Olvidé mi contraseña?</em></p>
+                    <p style="margin-bottom: 12px;">Los estudiantes no necesitan contraseña, solo DNI y nombre. Si eres administrador, contacta con soporte.</p>
+                    
+                    <p><em>¿Puedo repetir un examen?</em></p>
+                    <p style="margin-bottom: 12px;">Cada examen permite un máximo de 2 intentos. Una vez agotados, no podrás repetirlo.</p>
+                    
+                    <p><em>¿Dónde veo mis resultados?</em></p>
+                    <p style="margin-bottom: 12px;">En la pestaña "Historial" de tu panel principal encontrarás todos tus exámenes realizados.</p>
+                    
+                    <p><em>¿Cómo descargo mi certificado?</em></p>
+                    <p style="margin-bottom: 12px;">Si aprobaste un examen, verás el icono 🏆 junto al resultado. Haz clic para ver e imprimir tu certificado.</p>
+                    
+                    <p style="margin-top: 16px; color: var(--text-3); font-size: 12px;">Horario de atención: Lunes a Viernes, 9:00 - 18:00</p>
+                `
+            }
+        };
+
+        const data = legalContent[type];
+        if (data) {
+            icon.textContent = data.icon;
+            title.textContent = data.title;
+            content.innerHTML = data.content;
+            modal.classList.add('active');
+        }
+    };
 
     init();
 })();
