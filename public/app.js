@@ -566,10 +566,17 @@
                     <div id="tableBody">${data.results.map(r => {
                         const cls = r.score >= 9 ? 'excellent' : r.score >= 7 ? 'good' : r.score >= 5 ? 'regular' : 'poor';
                         const hasNote = r.student_note && r.student_note.trim();
-                        return `<div class="table-row" data-id="${r.id}"><div><span class="name">${r.name}</span><br><span class="dni">${r.dni}</span></div><span class="exam">${r.exam_title}</span><span class="score ${cls}">${r.score.toFixed(1)}</span><span class="aciertos">${r.correct_count}/${r.total}</span><span class="note-indicator ${hasNote ? 'has-note' : ''}" data-note="${encodeURIComponent(r.student_note || '')}" title="${hasNote ? 'Ver nota' : 'Sin nota'}">${hasNote ? '💬' : '—'}</span></div>`;
+                        return `<div class="table-row clickable" data-id="${r.id}"><div><span class="name">${r.name}</span><br><span class="dni">${r.dni}</span></div><span class="exam">${r.exam_title}</span><span class="score ${cls}">${r.score.toFixed(1)}</span><span class="aciertos">${r.correct_count}/${r.total}</span><span class="note-indicator ${hasNote ? 'has-note' : ''}" data-note="${encodeURIComponent(r.student_note || '')}" title="${hasNote ? 'Ver nota' : 'Sin nota'}">${hasNote ? '💬' : '—'}</span></div>`;
                     }).join('')}</div>
                 </div>
             `;
+            document.querySelectorAll('.table-row.clickable').forEach(row => {
+                row.onclick = e => {
+                    if (!e.target.classList.contains('note-indicator')) {
+                        viewAdminResult(parseInt(row.dataset.id));
+                    }
+                };
+            });
             document.querySelectorAll('.note-indicator').forEach(n => {
                 n.onclick = e => {
                     e.stopPropagation();
@@ -582,6 +589,28 @@
             });
         } catch (err) {
             $('adminResultsTab').innerHTML = `<div class="empty-state"><h3>Error al cargar resultados</h3></div>`;
+        }
+    }
+
+    async function viewAdminResult(attemptId) {
+        try {
+            const data = await api(`/admin/results/${attemptId}`);
+            $('hReviewTitle').textContent = `${data.attempt.userName} - ${data.attempt.examTitle}`;
+            $('hScoreVal').textContent = data.attempt.score.toFixed(1);
+            const pct = Math.round((data.attempt.correct / (data.attempt.correct + data.attempt.incorrect + data.attempt.unanswered)) * 100);
+            const cls = data.attempt.score >= 9 ? 'excellent' : data.attempt.score >= 7 ? 'good' : data.attempt.score >= 5 ? 'regular' : 'poor';
+            const bar = $('hScoreBar');
+            bar.className = 'score-bar-fill ' + cls;
+            bar.style.width = '0%';
+            setTimeout(() => bar.style.width = pct + '%', 100);
+
+            $('hReviewSection').innerHTML = `<h3>Revisión de respuestas</h3><div id="hReviewList"></div>`;
+            renderReview($('hReviewList'), data.review);
+
+            $('hCertBtn').classList.add('hidden');
+            showScreen('hReview');
+        } catch (err) {
+            showAlert('Error', err.message, 'error');
         }
     }
 
