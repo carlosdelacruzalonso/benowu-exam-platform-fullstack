@@ -1,5 +1,7 @@
 Benowu - Plataforma de Exámenes Online
 
+https://benowu-exam-platform-fullstack-production.up.railway.app/
+
 Plataforma profesional de exámenes online con backend Node.js, autenticación JWT y base de datos SQLite.
 
 Características
@@ -54,9 +56,3 @@ La plataforma incluye:
 - Certificados imprimibles
 - Panel de administración completo
   
-Soporte
-
-¿Problemas? Revisa:
-1. Las variables de entorno están configuradas
-2. El puerto no está en uso
-3. Node.js versión 18 o superior
